@@ -1,22 +1,19 @@
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import useCachedResources from '@hooks/useCachedResources';
-import useColorScheme from '@hooks/useColorScheme';
-import Navigation from '@navigation';
+import Navigation from '@app/navigation';
+import { ReactQueryProvider } from '@app/libs/react-query';
+import { SplashScreen } from '@app/screens';
 
-export default function App() {
-  const isLoadingComplete = useCachedResources();
-  const colorScheme = useColorScheme();
-
-  if (!isLoadingComplete) {
-    return null;
-  } else {
-    return (
-      <SafeAreaProvider>
-        <Navigation colorScheme={colorScheme} />
-        <StatusBar />
-      </SafeAreaProvider>
-    );
-  }
+function App() {
+  return (
+    <ReactQueryProvider>
+      <SplashScreen>
+        <SafeAreaProvider>
+          <Navigation />
+        </SafeAreaProvider>
+      </SplashScreen>
+    </ReactQueryProvider>
+  );
 }
+
+export default App;

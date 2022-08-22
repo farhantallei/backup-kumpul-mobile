@@ -5,12 +5,7 @@
     "strict": true,
     "baseUrl": "./src",
     "paths": {
-      "@components/*": ["components/*"],
-      "@constants/*": ["constants/*"],
-      "@hooks/*": ["hooks/*"],
-      "@navigation": ["navigation/index.tsx"],
-      "@screens/*": ["screens/*"],
-      "@types": ["types/index.ts"]
+      "@app/*": ["./*"],
     }
   }
 }
