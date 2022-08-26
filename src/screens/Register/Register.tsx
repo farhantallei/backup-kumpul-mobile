@@ -2,10 +2,10 @@ import * as SecureStore from 'expo-secure-store';
 import { useRef, useState } from 'react';
 import {
   Button,
-  GestureResponderEvent,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Text,
   TextInput,
   TouchableWithoutFeedback,
   View,
@@ -14,20 +14,63 @@ import {
 import { useGlobalState } from '@app/hooks/useGlobalState';
 import { RootStackScreenProps } from '@app/navigation';
 import styles from './Register.styles';
+import { useMutation } from '@tanstack/react-query';
+import { register } from '@app/services/auth';
 
 export function RegisterScreen({
   navigation,
 }: RootStackScreenProps<'Register'>) {
   const phoneNumberInputRef = useRef<TextInput>(null);
 
-  const [error, setError] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    phoneNumber: '',
+  });
+
+  const [error, setError] = useState({
+    name: false,
+    phoneNumber: false,
+  });
+
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [userId, setUserId] = useGlobalState<string | null>(['auth']);
 
-  async function handleSubmit(e: GestureResponderEvent) {
-    await SecureStore.setItemAsync('userId', 'ajksndqw');
-    setUserId('ajksndqw');
-  }
+  const { mutate } = useMutation(
+    () => register({ name: form.name, phoneNumber: form.phoneNumber }),
+    {
+      onMutate() {
+        setError({
+          name: false,
+          phoneNumber: false,
+        });
+        setErrorMessage('');
+      },
+      onError: (error: string) => {
+        if (error.includes('body/')) {
+          const newErr = error.split('/');
+          const instancePath = newErr[0];
+          const dataError = newErr[1].split(' ')[0];
+
+          // console.log({ instancePath, dataError });
+          setError((prevErr) => ({ ...prevErr, [dataError]: true }));
+
+          if (dataError === 'name')
+            setErrorMessage('Name should more than 2 chars');
+          if (dataError === 'phoneNumber')
+            setErrorMessage('Phone number type error');
+
+          return;
+        }
+        setErrorMessage(error);
+        // setError(true);
+      },
+      onSuccess: async (data) => {
+        await SecureStore.setItemAsync('userId', data.id);
+        setUserId(data.id);
+      },
+    }
+  );
 
   return (
     <KeyboardAvoidingView
@@ -35,27 +78,34 @@ export function RegisterScreen({
       style={styles.container}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.inner}>
+          <Text style={{ color: 'red' }}>{errorMessage}</Text>
           <TextInput
             placeholder="Display name"
             returnKeyType="next"
+            onChangeText={(text) =>
+              setForm((prevForm) => ({ ...prevForm, name: text }))
+            }
             onSubmitEditing={() => phoneNumberInputRef.current?.focus()}
             blurOnSubmit={false}
             style={{
               ...styles.textInput,
-              borderColor: error ? 'red' : undefined,
+              borderColor: error.name ? 'red' : undefined,
             }}
           />
           <TextInput
             placeholder="Phone number"
+            onChangeText={(text) =>
+              setForm((prevForm) => ({ ...prevForm, phoneNumber: text }))
+            }
             style={{
               ...styles.textInput,
-              borderColor: error ? 'red' : undefined,
+              borderColor: error.phoneNumber ? 'red' : undefined,
             }}
-            keyboardType="numeric"
+            keyboardType="number-pad"
             ref={phoneNumberInputRef}
           />
           <View style={styles.btnContainer}>
-            <Button title="Submit" onPress={handleSubmit} />
+            <Button title="Submit" onPress={() => mutate()} />
           </View>
           <Button title="Login" onPress={() => navigation.navigate('Login')} />
         </View>
