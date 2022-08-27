@@ -7,14 +7,13 @@ import {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
-import { LoginScreen, PartyScreen, RegisterScreen } from '@app/screens';
+import { PartyScreen, WelcomeScreen } from '@app/screens';
 import { BottomTabNavigator, BottomTabParamList } from './BottomTab';
 import { useGlobalState } from '@app/hooks/useGlobalState';
 
 type RootStackParamList = {
   Root: NavigatorScreenParams<BottomTabParamList> | undefined;
-  Register: undefined;
-  Login: undefined;
+  Welcome: undefined;
   Party: undefined;
 };
 
@@ -30,10 +29,7 @@ function Navigation() {
     <NavigationContainer>
       <Stack.Navigator>
         {userId == null ? (
-          <>
-            <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-          </>
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
         ) : (
           <>
             <Stack.Screen
